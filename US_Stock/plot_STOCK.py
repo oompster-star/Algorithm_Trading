@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
 import numpy as np
+import time
 
 # Scikit-Learn
 from sklearn.preprocessing import MinMaxScaler
@@ -24,6 +25,7 @@ time_step = 60
 lstm_epochs = 25
 
 # --- 2. Fetch and Prepare Data ---
+start_time = time.time()
 print(f"Fetching data for {', '.join(tickers)}...")
 data = yf.download(tickers, start=start_date, end=end_date)
 if data.empty:
@@ -64,8 +66,10 @@ for ticker in tickers:
     X_train, y_train = np.array(X_train), np.array(y_train)
     X_train = np.reshape(X_train, (X_train.shape[0], X_train.shape[1], 1))
     model_lstm = Sequential([
-        Input(shape=(X_train.shape[1], 1)), LSTM(units=50, return_sequences=True), Dropout(0.2),
-        LSTM(units=50, return_sequences=False), Dropout(0.2), Dense(units=25), Dense(units=1)
+        Input(shape=(X_train.shape[1], 1)), 
+        LSTM(units=16, return_sequences=True), Dropout(0.2),
+        LSTM(units=16, return_sequences=False), Dropout(0.2), 
+        Dense(units=25), Dense(units=1)
     ])
     model_lstm.compile(optimizer='adam', loss='mean_squared_error')
     model_lstm.fit(X_train, y_train, batch_size=32, epochs=lstm_epochs, verbose=0)
@@ -125,3 +129,8 @@ fig6.tight_layout(rect=[0, 0, 1, 0.96])
 # --- 7. Display All Generated Figures ---
 plt.show()
 print("\nPlots displayed successfully.")
+
+print("Num GPUs Available:", len(tf.config.list_physical_devices('GPU')))
+print("GPU devices:", tf.config.list_physical_devices('GPU'))
+end_time = time.time()
+print(f"Total runtime: {end_time - start_time:.2f} seconds")
